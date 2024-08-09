@@ -16,46 +16,50 @@ walkLeft = [pygame.image.load('L1.png'), pygame.image.load('L2.png'), pygame.ima
 bg = pygame.image.load('bg.jpg')
 char = pygame.image.load('standing.png')
 
-#Variables
-red = (0,0,255)
-run = True
-x = 10
-y = 420
-width = 40
-height = 60
-vel = 5
-isjumping = False
-jumpCount = 10
-right = False
-left = False
-stepCount = 0
-clock = pygame.time.Clock()
+#Creando clase
+class player(object):
+    def __init__(self, x, y, width, height):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.vel = 5
+        self.isJumping = False
+        self.jumpCount = 10
+        self.right = False
+        self.left = False
+        self.stepCount = 0
+    
+    def draw(self, window):
+        if self.stepCount+1 >= 27:
+            self.stepCount = 0
+
+        if self.left:
+            window.blit(walkLeft[self.stepCount//3], (self.x, self.y))
+            self.stepCount += 1
+        elif self.right:
+            window.blit(walkRight[self.stepCount//3], (self.x, self.y))
+            self.stepCount += 1
+        else:
+            window.blit(char, (self.x, self.y))
 
 def redrawScreen():
-    global stepCount
+    man.stepCount
     #Rellena el fondo de la pantalla
     window.blit(bg, (0,0))
-
-    if stepCount+1 >= 27:
-        stepCount = 0
-
-    if left:
-        window.blit(walkLeft[stepCount//3], (x, y))
-        stepCount += 1
-    elif right:
-        window.blit(walkRight[stepCount//3], (x, y))
-        stepCount += 1
-    else:
-        window.blit(char, (x, y))
-
+    #Dibujar personaje/s
+    man.draw(window)
     #Actualizar los movimientos en pantalla
     pygame.display.update()
 
+#Esto nos ayuda a indicar las FPS en el bucle principal
+clock = pygame.time.Clock()
+run = True
+man = player(10, 410, 64, 64)
 
 #Bucle principal
 while run:
-    #Incluyendo delay a los eventos para que no vaya tan rapido (x millisengundos de delay)
-    #pygame.time.delay(50)
+    #FPS
     clock.tick(27)
 
     #Bucle de eventos
@@ -65,36 +69,36 @@ while run:
 
     #Asignando un movimiento en los ejes a las teclas de flecha
     keys = pygame.key.get_pressed()
-    #if pygame.key.get_pressed()[pygame.K_LEFT]:
-    #Limitaciones al movimiento añadido con la condicional despues del and
-    if keys[pygame.K_LEFT] and x >= vel:
-        x -= vel
-        left = True
-        right = False
 
-    elif keys[pygame.K_RIGHT] and x < (screen_width - width):
-        x += vel
-        left = False
-        right = True
+    #Limitaciones al movimiento añadido con la condicional despues del and
+    if keys[pygame.K_LEFT] and man.x >= man.vel:
+        man.x -= man.vel
+        man.left = True
+        man.right = False
+
+    elif keys[pygame.K_RIGHT] and man.x < (screen_width - man.width):
+        man.x += man.vel
+        man.left = False
+        man.right = True
     else:
-        stepCount = 0
-        left = False
-        right = False
+        man.stepCount = 0
+        man.left = False
+        man.right = False
     #Mecanica de salto
-    if not(isjumping):
+    if not(man.isJumping):
         if keys[pygame.K_SPACE]:
-            isjumping = True
+            man.isJumping = True
     else:
-        if jumpCount >= -10:
-            if jumpCount >= 0:
-                y -= (jumpCount ** 2) * 0.5
-                jumpCount -= 1
+        if man.jumpCount >= -10:
+            if man.jumpCount >= 0:
+                man.y -= (man.jumpCount ** 2) * 0.5
+                man.jumpCount -= 1
             else:
-                y -= (jumpCount ** 2) * 0.5 * -1
-                jumpCount -= 1
+                man.y -= (man.jumpCount ** 2) * 0.5 * -1
+                man.jumpCount -= 1
         else:
-            isjumping = False
-            jumpCount = 10
+            man.isJumping = False
+            man.jumpCount = 10
 
     redrawScreen()
 #Fin del juego    
