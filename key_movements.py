@@ -48,6 +48,9 @@ class player(object):
         self.hitbox = (self.x + 17, self.y + 10, 30, 55)
         pygame.draw.rect(window, (255,0,0), self.hitbox, 2)
 
+    def get_hit(self):
+        print("man got hit!")
+
 class projectile(object):
     def __init__(self, x, y, rad, color, facing):
         self.x = x
@@ -89,7 +92,7 @@ class enemy(object):
                 window.blit(self.walkLeft[self.walkCount//3], (self.x, self.y))
                 self.walkCount += 1
             self.hitbox = (self.x + 17, self.y, 32, 60)
-            #pygame.draw.rect(window, (255,0,0), self.hitbox, 2)
+            pygame.draw.rect(window, (255,0,0), self.hitbox, 2)
             pygame.draw.rect(window, (255,0,0), (self.x+10, self.y-5, 50, 8))
             pygame.draw.rect(window, (0,225,0), (self.x+10, self.y-5, 50 - (5 * (10 - (self.health))), 8))
     
@@ -107,7 +110,7 @@ class enemy(object):
                 self.vel = self.vel * -1
                 self.walkCount = 0
 
-    def hit(self):
+    def get_hit(self):
         print("hit")
         if self.health > 0:
             self.health -= 1
@@ -156,7 +159,7 @@ while run:
         if goblin.visible:
             if bullet.y - bullet.rad < goblin.hitbox[1] + goblin.hitbox[3] and bullet.y + bullet.rad > goblin.hitbox[1]:
                 if bullet.x + bullet.rad > goblin.hitbox[0] and bullet.x - bullet.rad < goblin.hitbox[0] + goblin.hitbox[2]:
-                    goblin.hit()
+                    goblin.get_hit()
                     score += 1
                     bullets.pop(bullets.index(bullet))
 
@@ -204,6 +207,10 @@ while run:
                 facing = 1
             bullets.append(projectile((man.x + man.width//2), (man.y + man.height//2), 10, (255,0,0), facing))
             shootLoop = 1
+
+    if man.y < goblin.hitbox[1] + goblin.hitbox[3] and man.y + man.height > goblin.hitbox[1]:
+            if man.x + man.width > (goblin.hitbox[0] + 15) and (man.x + 20) < goblin.hitbox[0] + goblin.hitbox[2]:
+                man.get_hit()
     redrawScreen()
 #Fin del juego    
 pygame.quit()
