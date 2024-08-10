@@ -46,6 +46,9 @@ class player(object):
         self.hitbox = (self.x + 17, self.y + 10, 30, 55)
         pygame.draw.rect(window, (255,0,0), self.hitbox, 2)
 
+    def get_hit(self):
+        print("man got hit!")
+
 class projectile(object):
     def __init__(self, x, y, rad, color, facing):
         self.x = x
@@ -100,7 +103,7 @@ class enemy(object):
                 self.vel = self.vel * -1
                 self.walkCount = 0
 
-    def hit(self):
+    def get_hit(self):
         print("hit")
 
 def redrawScreen():
@@ -118,8 +121,8 @@ def redrawScreen():
 #Esto nos ayuda a indicar las FPS en el bucle principal
 clock = pygame.time.Clock()
 run = True
-man = player(10, 410, 64, 64)
-goblin = enemy(100, 410, 64, 64, 500)
+man = player(10, 405, 64, 64)
+goblin = enemy(100, 410, 64, 64, 100)
 bullets = []
 shootLoop = 0
 
@@ -141,7 +144,7 @@ while run:
     for bullet in bullets:
         if bullet.y - bullet.rad < goblin.hitbox[1] + goblin.hitbox[3] and bullet.y + bullet.rad > goblin.hitbox[1]:
             if bullet.x + bullet.rad > goblin.hitbox[0] and bullet.x - bullet.rad < goblin.hitbox[0] + goblin.hitbox[2]:
-                goblin.hit()
+                goblin.get_hit()
                 bullets.pop(bullets.index(bullet))
 
         if bullet.x < 852 and bullet.x > 0:
@@ -188,6 +191,10 @@ while run:
                 facing = 1
             bullets.append(projectile((man.x + man.width//2), (man.y + man.height//2), 10, (255,0,0), facing))
             shootLoop = 1
+
+    if man.y < goblin.hitbox[1] + goblin.hitbox[3] and man.y + man.height > goblin.hitbox[1]:
+            if man.x + man.width > (goblin.hitbox[0] + 15) and (man.x + 20) < goblin.hitbox[0] + goblin.hitbox[2]:
+                man.get_hit()
     redrawScreen()
 #Fin del juego    
 pygame.quit()
