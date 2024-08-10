@@ -26,7 +26,7 @@ class player(object):
         self.vel = 5
         self.isJumping = False
         self.jumpCount = 10
-        self.right = False
+        self.right = True
         self.left = False
         self.stepCount = 0
     
@@ -43,12 +43,26 @@ class player(object):
         else:
             window.blit(char, (self.x, self.y))
 
+class projectile(object):
+    def __init__(self, x, y, rad, color, facing):
+        self.x = x
+        self.y = y
+        self.rad = rad
+        self.color = color
+        self.facing = facing
+        self.vel = 8 * facing
+
+    def draw(self, window):
+        pygame.draw.circle(window, self.color, (self.x, self.y), self.rad)
+
 def redrawScreen():
-    man.stepCount
     #Rellena el fondo de la pantalla
     window.blit(bg, (0,0))
     #Dibujar personaje/s
     man.draw(window)
+    for bullet in bullets:
+        bullet.draw(window)
+    
     #Actualizar los movimientos en pantalla
     pygame.display.update()
 
@@ -56,6 +70,7 @@ def redrawScreen():
 clock = pygame.time.Clock()
 run = True
 man = player(10, 410, 64, 64)
+bullets = []
 
 #Bucle principal
 while run:
@@ -66,6 +81,12 @@ while run:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
+
+    for bullet in bullets:
+        if bullet.x < 852 and bullet.x > 0:
+            bullet.x += bullet.vel
+        else:
+            bullets.pop(bullets.index(bullet))
 
     #Asignando un movimiento en los ejes a las teclas de flecha
     keys = pygame.key.get_pressed()
@@ -82,11 +103,9 @@ while run:
         man.right = True
     else:
         man.stepCount = 0
-        man.left = False
-        man.right = False
     #Mecanica de salto
     if not(man.isJumping):
-        if keys[pygame.K_SPACE]:
+        if keys[pygame.K_UP]:
             man.isJumping = True
     else:
         if man.jumpCount >= -10:
@@ -99,6 +118,14 @@ while run:
         else:
             man.isJumping = False
             man.jumpCount = 10
+        
+    if pygame.key.get_pressed()[pygame.K_SPACE]:
+        if len(bullets) < 10:
+            if man.left:
+                facing = -1
+            elif man.right:
+                facing = 1
+            bullets.append(projectile((man.x + man.width//2), (man.y + man.height//2), 10, (255,0,0), facing))
 
     redrawScreen()
 #Fin del juego    
