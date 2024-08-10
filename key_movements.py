@@ -29,6 +29,7 @@ class player(object):
         self.right = True
         self.left = False
         self.stepCount = 0
+        self.hitbox = (self.x + 17, self.y + 10, 30, 55)
     
     def draw(self, window):
         if self.stepCount+1 >= 27:
@@ -42,6 +43,8 @@ class player(object):
             self.stepCount += 1
         else:
             window.blit(char, (self.x, self.y))
+        self.hitbox = (self.x + 17, self.y + 10, 30, 55)
+        pygame.draw.rect(window, (255,0,0), self.hitbox, 2)
 
 class projectile(object):
     def __init__(self, x, y, rad, color, facing):
@@ -67,7 +70,21 @@ class enemy(object):
         self.height = height
         self.path = [x, end]  # This will define where our enemy starts and finishes their path.
         self.walkCount = 0
-        self.vel = 6
+        self.vel = 3
+        self.hitbox = (self.x + 20, self.y, 28, 60)
+    
+    def draw(self, window):
+        self.move()
+        if self.walkCount+1 >= 33:
+            self.walkCount = 0
+        if self.vel > 0:
+            window.blit(self.walkRight[self.walkCount//3], (self.x, self.y))
+            self.walkCount += 1
+        else:
+            window.blit(self.walkLeft[self.walkCount//3], (self.x, self.y))
+            self.walkCount += 1
+        self.hitbox = (self.x + 17, self.y, 32, 60)
+        pygame.draw.rect(window, (255,0,0), self.hitbox, 2)
     
     def move(self):
         if self.vel > 0:
@@ -83,16 +100,8 @@ class enemy(object):
                 self.vel = self.vel * -1
                 self.walkCount = 0
 
-    def draw(self, window):
-        self.move()
-        if self.walkCount+1 >= 33:
-            self.walkCount = 0
-        if self.vel > 0:
-            window.blit(self.walkRight[self.walkCount//3], (self.x, self.y))
-            self.walkCount += 1
-        else:
-            window.blit(self.walkLeft[self.walkCount//3], (self.x, self.y))
-            self.walkCount += 1
+    def hit(self):
+        print("hit")
 
 def redrawScreen():
     #Rellena el fondo de la pantalla
@@ -112,11 +121,17 @@ run = True
 man = player(10, 410, 64, 64)
 goblin = enemy(100, 410, 64, 64, 500)
 bullets = []
+shootLoop = 0
 
 #Bucle principal
 while run:
     #FPS
     clock.tick(27)
+
+    if shootLoop > 0:
+        shootLoop += 1
+    if shootLoop > 20:
+        shootLoop = 0
 
     #Bucle de eventos
     for event in pygame.event.get():
@@ -124,6 +139,11 @@ while run:
             run = False
 
     for bullet in bullets:
+        if bullet.y - bullet.rad < goblin.hitbox[1] + goblin.hitbox[3] and bullet.y + bullet.rad > goblin.hitbox[1]:
+            if bullet.x + bullet.rad > goblin.hitbox[0] and bullet.x - bullet.rad < goblin.hitbox[0] + goblin.hitbox[2]:
+                goblin.hit()
+                bullets.pop(bullets.index(bullet))
+
         if bullet.x < 852 and bullet.x > 0:
             bullet.x += bullet.vel
         else:
@@ -160,14 +180,14 @@ while run:
             man.isJumping = False
             man.jumpCount = 10
         
-    if pygame.key.get_pressed()[pygame.K_SPACE]:
+    if keys[pygame.K_SPACE] and shootLoop == 0:
         if len(bullets) < 10:
             if man.left:
                 facing = -1
             elif man.right:
                 facing = 1
             bullets.append(projectile((man.x + man.width//2), (man.y + man.height//2), 10, (255,0,0), facing))
-
+            shootLoop = 1
     redrawScreen()
 #Fin del juego    
 pygame.quit()
