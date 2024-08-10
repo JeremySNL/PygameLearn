@@ -15,7 +15,11 @@ walkRight = [pygame.image.load('img/R1.png'), pygame.image.load('img/R2.png'), p
 walkLeft = [pygame.image.load('img/L1.png'), pygame.image.load('img/L2.png'), pygame.image.load('img/L3.png'), pygame.image.load('img/L4.png'), pygame.image.load('img/L5.png'), pygame.image.load('img/L6.png'), pygame.image.load('img/L7.png'), pygame.image.load('img/L8.png'), pygame.image.load('img/L9.png')]
 bg = pygame.image.load('img/bg.jpg')
 char = pygame.image.load('img/standing.png')
-
+#Musica y sonido
+bulletSound = pygame.mixer.Sound("sound/bullet.wav")
+hurtSound = pygame.mixer.Sound("sound/hurt.wav")
+music = pygame.mixer.music.load("sound/music.mp3")
+pygame.mixer.music.play(-1)
 score = 0
 
 #Creando clase
@@ -25,7 +29,7 @@ class player(object):
         self.y = y
         self.width = width
         self.height = height
-        self.vel = 5
+        self.vel = 10
         self.isJumping = False
         self.jumpCount = 10
         self.right = True
@@ -50,6 +54,14 @@ class player(object):
 
     def get_hit(self):
         print("man got hit!")
+        self.x = 10
+        self.y = 405
+        self.isJumping = False
+        self.jumpCount = 10
+        i = 0
+        while i < 300:
+            pygame.time.delay(10)
+            i += 1
 
 class projectile(object):
     def __init__(self, x, y, rad, color, facing):
@@ -62,6 +74,7 @@ class projectile(object):
 
     def draw(self, window):
         pygame.draw.circle(window, self.color, (self.x, self.y), self.rad)
+        
 
 
 class enemy(object):
@@ -159,6 +172,7 @@ while run:
         if goblin.visible:
             if bullet.y - bullet.rad < goblin.hitbox[1] + goblin.hitbox[3] and bullet.y + bullet.rad > goblin.hitbox[1]:
                 if bullet.x + bullet.rad > goblin.hitbox[0] and bullet.x - bullet.rad < goblin.hitbox[0] + goblin.hitbox[2]:
+                    hurtSound.play()
                     goblin.get_hit()
                     score += 1
                     bullets.pop(bullets.index(bullet))
@@ -183,6 +197,7 @@ while run:
         man.right = True
     else:
         man.stepCount = 0
+    
     #Mecanica de salto
     if not(man.isJumping):
         if keys[pygame.K_UP]:
@@ -200,6 +215,7 @@ while run:
             man.jumpCount = 10
         
     if keys[pygame.K_SPACE] and shootLoop == 0:
+        bulletSound.play()
         if len(bullets) < 10:
             if man.left:
                 facing = -1
@@ -207,10 +223,12 @@ while run:
                 facing = 1
             bullets.append(projectile((man.x + man.width//2), (man.y + man.height//2), 10, (255,0,0), facing))
             shootLoop = 1
-
-    if man.y < goblin.hitbox[1] + goblin.hitbox[3] and man.y + man.height > goblin.hitbox[1]:
-            if man.x + man.width > (goblin.hitbox[0] + 15) and (man.x + 20) < goblin.hitbox[0] + goblin.hitbox[2]:
-                man.get_hit()
+    if goblin.visible:
+        if man.hitbox[1] < goblin.hitbox[1] + goblin.hitbox[3] and man.hitbox[1] + man.hitbox[3] > goblin.hitbox[1]:
+                if man.hitbox[0] + man.hitbox[2] > (goblin.hitbox[0]) and (man.hitbox[0]) < goblin.hitbox[0] + goblin.hitbox[2]:
+                    man.get_hit()
+                    score -= 5
+                
     redrawScreen()
 #Fin del juego    
 pygame.quit()
